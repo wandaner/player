@@ -6,7 +6,7 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -23,7 +23,7 @@ import java.net.URLConnection;
 public class StreamingMediaPlayer {
 
     private static final int INTIAL_BUFFER =  96*10/8;
-	private ImageButton playButton;
+	private ImageView playButton;
 	private SeekBar progressBar;
 	private TextView playTime;
 	private long mediaLengthInKb, mediaLengthInSeconds;
@@ -40,7 +40,7 @@ public class StreamingMediaPlayer {
 	private boolean isInterrupted;
 	private Context context;
 	private int counter = 0;
- 	public StreamingMediaPlayer(Context  context, ImageButton playButton, SeekBar progressBar,TextView playTime){
+ 	public StreamingMediaPlayer(Context  context, ImageView playButton, SeekBar progressBar, TextView playTime){
  		this.context = context;
 		this.playButton = playButton;
 		this.playTime=playTime;

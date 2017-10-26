@@ -10,7 +10,6 @@ import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 /**
@@ -29,6 +28,8 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
     private Timer mTimer=new Timer();
     private boolean isPlayer;
     private TimerTask mTimerTask;
+    private int current_progress;
+    private int total_progress;
     public Player(SeekBar progress, TextView TV_CurrentPoi,TextView TV_TotalDuration){
         this.skbProgress=progress;
         this.tv_totalTime = TV_TotalDuration;
@@ -57,7 +58,9 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
             skbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+                    if(fromUser){
+                        setPlayTimeText(progress);
+                    }
                 }
 
                 @Override
@@ -67,12 +70,13 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    int press = seekBar.getProgress();
+                    int press = seekBar.getProgress()*1000;
                     if(isPlayer) {
-                        mediaPlayer.pause();
-                        mediaPlayer.seekTo(press);
+                        pause();
                         isPlayer = false;
+                        mediaPlayer.seekTo(press);
                     }
+                    Log.e(TAG,"press:"+press);
                 }
             });
         }
@@ -82,24 +86,17 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
      */
     Handler handleProgress = new Handler() {
         public void handleMessage(Message msg) {
-            int position = mediaPlayer.getCurrentPosition();
-            int duration = mediaPlayer.getDuration();
-            int min = (position/1000)/60;
-            int sec = (position/1000)%60;
-            if(sec<10){
-                tv_playTime.setText(min+":0"+sec);
-            }else {
-                tv_playTime.setText(min+":"+sec);
-            }
-            if (duration > 0) {
-                skbProgress.setProgress(position);
-            }
+            current_progress = mediaPlayer.getCurrentPosition()/1000;
+            skbProgress.setProgress(current_progress);
+            setPlayTimeText(current_progress);
         }
     };
-
-    public void play(){
-        mediaPlayer.start();
-        isPlayer = true;
+    private void setPlayTimeText(int currentProgress){
+        int poi_min = currentProgress/60;
+        int poi_sec = currentProgress%60;
+        String min = poi_min<10?"0"+poi_min:""+poi_min;
+        String sec = poi_sec<10?"0"+poi_sec:""+poi_sec;
+        tv_playTime.setText(min+":"+sec);
     }
 
     public void playUrl(String videoUrl){
@@ -107,13 +104,14 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
             mediaPlayer.reset();
             mediaPlayer.setDataSource(videoUrl);
             mediaPlayer.prepare();//prepare之后自动播放
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e){
+
         }
+    }
+
+    public void play(){
+        mediaPlayer.start();
+        isPlayer = true;
     }
 
 
@@ -132,16 +130,14 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
     @Override
     public void onPrepared(MediaPlayer player) {
         play();
-        int duration = player.getDuration();
-        int total_min = duration/1000/60;
-        int total_sec = (duration/100)%60;
-        if(total_sec<10){
-            tv_totalTime.setText(total_min+":0"+total_sec);
-        }else {
-            tv_totalTime.setText(total_min+":"+total_sec);
-        }
-        tv_playTime.setText("00:00");
-        skbProgress.setMax(duration);
+        total_progress = player.getDuration()/1000;
+        int total_min = total_progress/60;
+        int total_sec = total_progress%60;
+        String min = total_min<10?"0"+total_min:""+total_min;
+        String sec = total_sec<10?"0"+total_sec:""+total_sec;
+        tv_totalTime.setText(min+":"+sec);
+        setPlayTimeText(0);
+        skbProgress.setMax(total_progress);
     }
 
     @Override
@@ -151,7 +147,8 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
 
     @Override
     public void onBufferingUpdate(MediaPlayer player, int bufferingProgress) {
-        skbProgress.setSecondaryProgress(bufferingProgress);
+        Log.e(TAG,"bufferingProgress:"+bufferingProgress);
+        skbProgress.setSecondaryProgress((int) (total_progress*bufferingProgress/100.0));
     }
 
     @Override
@@ -161,6 +158,7 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
 
     @Override
     public void onSeekComplete(MediaPlayer mp) {
+        Log.e(TAG,"onSeekComplete:"+mp.getCurrentPosition());
         if(mediaPlayer!=null){
             play();
         }

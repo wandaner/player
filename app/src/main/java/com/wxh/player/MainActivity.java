@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -12,7 +13,7 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ImageButton playButton;
+    private ImageView playButton;
     private boolean isPlaying;
     private TextView playTime;
     private StreamingMediaPlayer audioStreamer;
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         playTime=(TextView) findViewById(R.id.playTime);
         totalTime=(TextView) findViewById(R.id.totalTime);
-        playButton = (ImageButton) findViewById(R.id.button_play);
+        playButton = (ImageView) findViewById(R.id.button_play);
         progressBar = (SeekBar) findViewById(R.id.progress_bar);
         player = new Player(progressBar,playTime,totalTime);
         playButton.setOnClickListener(new View.OnClickListener() {
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initControls() {
         playTime=(TextView) findViewById(R.id.playTime);
-        playButton = (ImageButton) findViewById(R.id.button_play);
+        playButton = (ImageView) findViewById(R.id.button_play);
         playButton.setEnabled(false);
         playButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
