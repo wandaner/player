@@ -15,13 +15,18 @@
         android:gravity="center"
         android:orientation="horizontal"
         android:weightSum="5">
+        <TextView
+            android:id="@+id/playTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"/>
         <SeekBar
             android:id="@+id/progress_bar"
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:layout_weight="3"/>
+            android:layout_weight="4"/>
         <TextView
-            android:id="@+id/playTime"
+            android:id="@+id/totalTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="00:00"/>

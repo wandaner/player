@@ -16,13 +16,25 @@ public class MainActivity extends AppCompatActivity {
     private boolean isPlaying;
     private TextView playTime;
     private StreamingMediaPlayer audioStreamer;
-
+    private Player player;
+    private SeekBar progressBar;
+    private TextView totalTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initControls();
+        playTime=(TextView) findViewById(R.id.playTime);
+        totalTime=(TextView) findViewById(R.id.totalTime);
+        playButton = (ImageButton) findViewById(R.id.button_play);
+        progressBar = (SeekBar) findViewById(R.id.progress_bar);
+        player = new Player(progressBar,playTime,totalTime);
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                player.playUrl("http://wting.info:81/asdb/fiction/xuanhuan/doupocq/3tiozb1a.mp3");
+            }
+        });
     }
 
 
