@@ -16,21 +16,31 @@ import java.util.TimerTask;
  * Created by xukai on 2017/10/26.
  */
 
-public class Player implements OnBufferingUpdateListener,OnCompletionListener,
+public class MusicPlayer implements OnBufferingUpdateListener,
+        OnCompletionListener,
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
         MediaPlayer.OnSeekCompleteListener{
-    private static final String TAG = "XuKai_"+Player.class.getName();
+
+    private static final String TAG = "XuKai_"+MusicPlayer.class.getName();
+    private static MusicPlayer instance;
+    private MusicPlayer(){}
+    public static MusicPlayer getInstance(){
+        if(instance==null){
+            instance = new MusicPlayer();
+        }
+        return instance;
+    }
     private MediaPlayer mediaPlayer;
     private SeekBar skbProgress;
     private TextView tv_totalTime;
     private TextView tv_playTime;
-    private Timer mTimer=new Timer();
-    private boolean isPlayer;
+    private Timer mTimer;
     private TimerTask mTimerTask;
     private int current_progress;
     private int total_progress;
-    public Player(SeekBar progress, TextView TV_CurrentPoi,TextView TV_TotalDuration){
+
+    public void init(SeekBar progress, TextView TV_CurrentPoi,TextView TV_TotalDuration){
         this.skbProgress=progress;
         this.tv_totalTime = TV_TotalDuration;
         this.tv_playTime = TV_CurrentPoi;
@@ -45,15 +55,15 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
         mTimerTask = new TimerTask() {
             @Override
             public void run() {
-                if(mediaPlayer==null)
-                    return;
-                if (mediaPlayer.isPlaying() && skbProgress.isPressed() == false) {
-                    handleProgress.sendEmptyMessage(0);
-                }
+            if(mediaPlayer==null)
+                return;
+            if (mediaPlayer.isPlaying() && skbProgress.isPressed() == false) {
+                handleProgress.sendEmptyMessage(0);
+            }
             }
         };
+        mTimer=new Timer();
         mTimer.schedule(mTimerTask, 0, 1000);
-
         if(this.skbProgress!=null){
             skbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
@@ -71,11 +81,8 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
                     int press = seekBar.getProgress()*1000;
-                    if(isPlayer) {
-                        pause();
-                        isPlayer = false;
-                        mediaPlayer.seekTo(press);
-                    }
+                    pause();
+                    mediaPlayer.seekTo(press);
                     Log.e(TAG,"press:"+press);
                 }
             });
@@ -109,14 +116,24 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
         }
     }
 
+    public boolean isPlaying(){
+        if(mediaPlayer!=null){
+            if(mediaPlayer.isPlaying()){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void play(){
         mediaPlayer.start();
-        isPlayer = true;
     }
 
 
     public void pause(){
-        mediaPlayer.pause();
+        if(mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+        }
     }
 
     public void stop(){
@@ -125,6 +142,17 @@ public class Player implements OnBufferingUpdateListener,OnCompletionListener,
             mediaPlayer.release();
             mediaPlayer = null;
         }
+    }
+
+    public void onDestroy(){
+        stop();
+        if(mTimerTask!=null){
+            mTimerTask.cancel();
+        }
+        if(mTimer!=null){
+            mTimer.cancel();
+        }
+        instance = null;
     }
     /**监听器监听方法*/
     @Override
